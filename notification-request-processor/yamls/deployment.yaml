@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notificationprocessor-ms
+  namespace: default
+spec:
+  revisionHistoryLimit: 10
+  minReadySeconds: 60
+  progressDeadlineSeconds: 900
+  selector:
+    matchLabels:
+      app: notificationprocessor
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: notificationprocessor
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - notificationprocessor-ms
+              topologyKey: kubernetes.io/hostname
+      containers:
+        - name: notificationprocessor
+          image: notificationprocessor:3
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 9080
+              protocol: TCP
+          env:
+            - name: emailHealthUrl
+              value: http://10.42.0.9:9080/email/v1/health/status
+            - name: emailNotifyUrl
+              value: http://10.42.0.9:9080/email/v1/notify
+            - name: smsHealthUrl
+              value: http://10.42.0.14:9081/sms/v1/health/status
+            - name: smsNotifyUrl
+              value: http://10.42.0.14:9081/sms/v1/notify
