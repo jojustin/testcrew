@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: emailprocessor-ms
+  namespace: default
+spec:
+  revisionHistoryLimit: 10
+  minReadySeconds: 60
+  progressDeadlineSeconds: 900
+  selector:
+    matchLabels:
+      app: emailprocessor
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: emailprocessor
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - emailprocessor-ms
+              topologyKey: kubernetes.io/hostname
+      containers:
+        - name: emailprocessor
+          image: emailprocessor:1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 9080
+              protocol: TCP

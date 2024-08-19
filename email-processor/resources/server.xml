@@ -1,0 +1,29 @@
+<server description="Email Processor Microservice">
+	<!-- Enable features -->
+	<featureManager>
+		<feature>jaxrs-2.1</feature>
+		<feature>cdi-2.0</feature>
+        <feature>transportSecurity-1.0</feature>
+        <feature>appSecurity-2.0</feature>
+        <feature>wsSecurity-1.1</feature>
+		<feature>ssl-1.0</feature>
+		<feature>websocket-1.1</feature>
+	</featureManager>
+
+	<config updateTrigger="polled" monitorInterval="500ms"/>
+
+	<httpEndpoint host="*" httpPort="9080" httpsPort="9443" id="defaultHttpEndpoint"/>
+	<logging maxFiles="10" traceFileName="stdout" traceSpecification="*=info:" />
+
+	<basicRegistry id="basic" realm="BasicRealm"/>
+
+	<webContainer deferServletLoad="false"/>
+	<application context-root="/email" id="email" location="${server.config.dir}/apps/emailprocessor.war" type="war">
+   <classloader>
+    <privateLibrary>
+      <fileset dir="${server.config.dir}/lib" includes="*.jar" scanInterval="5s" />
+    </privateLibrary>
+  </classloader>
+  </application>
+</server>
+
